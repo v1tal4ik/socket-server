@@ -1,38 +1,39 @@
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
 const cors = require('cors');
-
+const bodyParser = require('body-parser');
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(
-	cors({
-		origin: '*',
-	})
-);
+app
+	.use(cors())
+	.use(bodyParser.urlencoded({ extended: false }))
+	.use(bodyParser.text())
+	.use(bodyParser.json());
 
-const server = http.createServer(app);
-const io = socketIo(server, {
-	cors: {
-		origin: '*',
-	},
+app.get('/', (req, res) => {
+	console.log('get request success');
+	res.status(200).json({ status: 'ok' });
 });
 
-io.on('connection', (socket) => {
-	console.log('New user connected');
+app.post('/start', (req, res) => {
+	console.log(req.body);
+	res.status(200).json({ status: true });
+});
 
-	socket.on('sendValue', (message) => {
-		console.log(message);
-		io.emit('toggleValue', message); // Broadcast the message to all connected clients
-	});
-
-	socket.on('disconnect', () => {
-		console.log('User disconnected');
+app.use((req, res) => {
+	res.status(404).json({
+		err: '404',
+		message: '404 - Not found',
 	});
 });
 
-const PORT = process.env.PORT || 9000;
+app.use((err, req, res) => {
+	res.status(500).json({
+		err: '500',
+		message: err.message,
+	});
+});
 
-server.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`);
+app.listen(PORT, () => {
+	console.log(`Example app listening on port ${PORT}`);
 });
