@@ -5,6 +5,8 @@ const socketIo = require('socket.io');
 
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const dayjs = require('dayjs');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,10 +43,16 @@ const basket_reservation = io.on('connection', (socket) => {
 });
 
 // Helper to send message (it uses closure to keep a reference to the io connetion - which is stored in basket_reservation in your code)
-const sendMessage = function (msg) {
+const sendMessage = ({ host, hostname, body: status }) => {
 	if (basket_reservation) {
 		console.log('sending message to all');
-		basket_reservation.emit('toggle', msg);
+		basket_reservation.emit('toggle', {
+			id: uuidv4(),
+			host,
+			hostname,
+			status,
+			date: dayjs().format('HH:mm:ss DD/MM/YYYY'),
+		});
 	}
 };
 
@@ -53,10 +61,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/toggle', (req, res) => {
-	console.log('/toggle', req.body, req.headers);
-	sendMessage(req.body);
-
-	// res.status(200).json({ value: req.body });
+	sendMessage(req);
+	res.status(200);
 });
 
 app.use((req, res) => {
