@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/toggle', (req, res) => {
-	console.log('/toggle', req);
+	console.log('/toggle', req.body, req.params);
 	sendMessage(req.body);
 
 	res.status(200).json({ value: req.body });
