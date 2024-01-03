@@ -1,6 +1,11 @@
 const express = require('express');
+const socketIo = require('socket.io');
+
+// App setup
+
 const cors = require('cors');
 const bodyParser = require('body-parser');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -10,14 +15,48 @@ app
 	.use(bodyParser.text())
 	.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-	console.log('get request success');
-	res.status(200).json({ status: 'ok' });
+const server = app.listen(PORT, () => {
+	console.log(`Server listening on port ${PORT}`);
 });
 
-app.post('/start', (req, res) => {
-	console.log(req.body);
-	res.status(200).json({ status: true });
+// Socket setup
+
+const io = socketIo(server, {
+	cors: {
+		origin: '*',
+	},
+});
+
+const basket_reservation = io.on('connection', (socket) => {
+	console.log('New user connected', socket.id);
+
+	socket.on('sendValue', (message) => {
+		console.log(message);
+		io.emit('toggle', message); // Broadcast the message to all connected clients
+	});
+
+	socket.on('disconnect', () => {
+		console.log('User disconnected');
+	});
+});
+
+// Helper to send message (it uses closure to keep a reference to the io connetion - which is stored in basket_reservation in your code)
+const sendMessage = function (msg) {
+	if (basket_reservation) {
+		console.log('sending message to all');
+		basket_reservation.emit('toggle', msg);
+	}
+};
+
+app.get('/', (req, res) => {
+	res.status(200).json({ status: 'work' });
+});
+
+app.post('/toggle', (req, res) => {
+	console.log('/toggle', req.body);
+	sendMessage(req.body);
+
+	res.status(200).json({ value: req.body });
 });
 
 app.use((req, res) => {
@@ -32,8 +71,4 @@ app.use((err, req, res) => {
 		err: '500',
 		message: err.message,
 	});
-});
-
-app.listen(PORT, () => {
-	console.log(`Example app listening on port ${PORT}`);
 });
