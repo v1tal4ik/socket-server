@@ -43,15 +43,14 @@ const basket_reservation = io.on('connection', (socket) => {
 });
 
 // Helper to send message (it uses closure to keep a reference to the io connetion - which is stored in basket_reservation in your code)
-const sendMessage = ({ host, hostname, body: status }) => {
+const sendMessage = ({ hostname, body: status }) => {
 	if (basket_reservation) {
 		console.log('sending message to all');
 		basket_reservation.emit('toggle', {
 			id: uuidv4().slice(0, 18),
-			host,
 			hostname,
 			status,
-			date: dayjs().format('HH:mm:ss DD/MM/YYYY'),
+			date: dayjs().format('ddd, dd MMM HH:mm:ss Z'),
 		});
 	}
 };
@@ -62,7 +61,7 @@ app.get('/', (req, res) => {
 
 app.post('/toggle', (req, res) => {
 	sendMessage(req);
-	res.status(200);
+	res.status(200).json({ status: 'ok' });
 });
 
 app.use((req, res) => {
