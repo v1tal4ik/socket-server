@@ -47,10 +47,10 @@ const sendMessage = ({ hostname, body: status }) => {
 	if (basket_reservation) {
 		console.log('sending message to all');
 		basket_reservation.emit('toggle', {
-			id: uuidv4().slice(0, 18),
+			id: uuidv4().slice(0, 14),
 			hostname,
 			status,
-			date: dayjs().format('ddd, dd MMM HH:mm:ss Z'),
+			date: dayjs().format('ddd, DD MMM HH:mm:ss'),
 		});
 	}
 };
