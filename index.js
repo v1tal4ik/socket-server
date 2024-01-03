@@ -47,7 +47,7 @@ const sendMessage = ({ host, hostname, body: status }) => {
 	if (basket_reservation) {
 		console.log('sending message to all');
 		basket_reservation.emit('toggle', {
-			id: uuidv4(),
+			id: uuidv4().slice(0, 18),
 			host,
 			hostname,
 			status,
